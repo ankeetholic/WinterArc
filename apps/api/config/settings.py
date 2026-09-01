@@ -173,12 +173,8 @@ SIMPLE_JWT = {
     'USER_ID_CLAIM': 'user_id',
 }
 
-# CORS Settings
-cors_origins_env = os.environ.get('CORS_ALLOWED_ORIGINS', '*').strip()
-if cors_origins_env == '*':
-    CORS_ALLOW_ALL_ORIGINS = True
-    CORS_ALLOWED_ORIGINS = []
-else:
-    CORS_ALLOW_ALL_ORIGINS = False
-    CORS_ALLOWED_ORIGINS = [origin.strip() for origin in cors_origins_env.split(',') if origin.strip()]
+# CORS Settings — Strictly locked to localhost
+CORS_ALLOW_ALL_ORIGINS = False
+cors_origins_env = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000').strip()
+CORS_ALLOWED_ORIGINS = [origin.strip() for origin in cors_origins_env.split(',') if origin.strip()]
 CORS_ALLOW_CREDENTIALS = True
