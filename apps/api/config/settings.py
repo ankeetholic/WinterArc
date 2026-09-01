@@ -173,8 +173,14 @@ SIMPLE_JWT = {
     'USER_ID_CLAIM': 'user_id',
 }
 
-# CORS Settings — Strictly locked to localhost
+# CORS Settings — Strictly locked to localhost & private local network
 CORS_ALLOW_ALL_ORIGINS = False
 cors_origins_env = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000').strip()
 CORS_ALLOWED_ORIGINS = [origin.strip() for origin in cors_origins_env.split(',') if origin.strip()]
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^http://localhost(:[0-9]+)?$",
+    r"^http://127\.0\.0\.1(:[0-9]+)?$",
+    r"^http://192\.168\.[0-9]+\.[0-9]+(:[0-9]+)?$",
+    r"^http://10\.[0-9]+\.[0-9]+\.[0-9]+(:[0-9]+)?$",
+]
 CORS_ALLOW_CREDENTIALS = True
