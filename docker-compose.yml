@@ -1,0 +1,64 @@
+services:
+  # ----------------------------------------------------------------------------
+  # 1. Django REST API Backend
+  # ----------------------------------------------------------------------------
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: winter_arc_api
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - DEBUG=False
+      - ALLOWED_HOSTS=*
+      - CORS_ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health/"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # ----------------------------------------------------------------------------
+  # 2. Next.js Web Frontend
+  # ----------------------------------------------------------------------------
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
+    container_name: winter_arc_web
+    restart: unless-stopped
+    environment:
+      - PORT=3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+
+  # ----------------------------------------------------------------------------
+  # 3. Optional Local PostgreSQL (Only used if DATABASE_URL points to localhost)
+  # ----------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: winter_arc_local_postgres
+    restart: unless-stopped
+    profiles:
+      - local-db
+    environment:
+      POSTGRES_DB: winter_arc_db
+      POSTGRES_USER: winter_arc_user
+      POSTGRES_PASSWORD: winter_arc_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_local_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_local_data:
