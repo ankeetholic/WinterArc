@@ -22,7 +22,27 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-winter-arc-dev-secret
 
 DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 't')
 
-ALLOWED_HOSTS = [host.strip() for host in os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',') if host.strip()]
+# Allowed Hosts & Render automatic domain matching
+allowed_hosts_raw = os.environ.get('ALLOWED_HOSTS', '*').strip()
+if allowed_hosts_raw == '*':
+    ALLOWED_HOSTS = ['*']
+else:
+    ALLOWED_HOSTS = [h.strip() for h in allowed_hosts_raw.split(',') if h.strip()]
+
+render_host = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if render_host and render_host not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(render_host)
+if '.onrender.com' not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append('.onrender.com')
+
+# CSRF Trusted Origins for Render and local development
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.onrender.com',
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+]
 
 # Application definition
 INSTALLED_APPS = [
@@ -154,7 +174,11 @@ SIMPLE_JWT = {
 }
 
 # CORS Settings
-CORS_ALLOW_ALL_ORIGINS = False
-cors_origins_env = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000')
-CORS_ALLOWED_ORIGINS = [origin.strip() for origin in cors_origins_env.split(',') if origin.strip()]
+cors_origins_env = os.environ.get('CORS_ALLOWED_ORIGINS', '*').strip()
+if cors_origins_env == '*':
+    CORS_ALLOW_ALL_ORIGINS = True
+    CORS_ALLOWED_ORIGINS = []
+else:
+    CORS_ALLOW_ALL_ORIGINS = False
+    CORS_ALLOWED_ORIGINS = [origin.strip() for origin in cors_origins_env.split(',') if origin.strip()]
 CORS_ALLOW_CREDENTIALS = True
